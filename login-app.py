@@ -1,6 +1,16 @@
 import streamlit as st
 import pandas as pd
-
+try:
+ 
+    from enum import Enum
+    from io import BytesIO, StringIO
+    from typing import Union
+ 
+    import pandas as pd
+    import streamlit as st
+except Exception as e:
+    print(e)
+ 
 # DB Management
 import sqlite3 
 conn = sqlite3.connect('data.db')
@@ -70,10 +80,25 @@ def main():
 
 				st.success("Logged In as {}".format(username))
 
-				task = st.selectbox("Task",["Add Post","Analytics","Profiles"])
+				task = st.selectbox("Task",["Upload Image (choose this)","Add Post","Analytics","Profiles"])
 				if task == "Add Post":
 					st.subheader("Add Your Post")
-
+				elif task == "Upload Image (choose this)":
+					file = st.file_uploader("Upload file", type=["csv", "png", "jpg"])
+					show_file = st.empty()
+				
+					if not file:
+						show_file.info("Please upload a file of type: " + ", ".join(["csv", "png", "jpg"]))
+						return
+				
+					content = file.getvalue()
+				
+					if isinstance(file, BytesIO):
+						show_file.image(file)
+					else:
+						data = pd.read_csv(file)
+						st.dataframe(data.head(10))
+					file.close()
 				elif task == "Analytics":
 					st.subheader("Analytics")
 				elif task == "Profiles":
